@@ -1,0 +1,94 @@
+@model IEnumerable<BookShelf.Application.DTOs.BookClubMembershipDto>
+
+@{
+    ViewData["Title"] = "Book Club Members";
+    var bookClubId = (Guid)ViewData["BookClubId"];
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Book Club Members</h1>
+        <a asp-action="Details" asp-route-id="@bookClubId" class="btn btn-outline-primary">
+            <i class="bi bi-arrow-left me-1"></i>Back to Club
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Member</th>
+                            <th>Role</th>
+                            <th>Joined Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var member in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <i class="bi bi-person-circle" style="font-size: 2rem;"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0">@member.UserName</h6>
+                                            <small class="text-muted">@member.UserEmail</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge @(member.Role == BookShelf.Domain.Enums.MemberRole.Admin ? "bg-danger" : 
+                                                        member.Role == BookShelf.Domain.Enums.MemberRole.Moderator ? "bg-success" : "bg-primary")">
+                                        @member.Role.ToString()
+                                    </span>
+                                </td>
+                                <td>@member.JoinedDate.ToString("MMM dd, yyyy")</td>
+                                <td>
+                                    @if (!member.IsCreator)
+                                    {
+                                        <div class="dropdown">
+                                            <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                                    id="dropdownMenuButton_@member.UserId" data-bs-toggle="dropdown" aria-expanded="false">
+                                                Change Role
+                                            </button>
+                                            <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton_@member.UserId">
+                                                <li>
+                                                    <form asp-action="UpdateMemberRole" method="post">
+                                                        <input type="hidden" name="bookClubId" value="@bookClubId" />
+                                                        <input type="hidden" name="userId" value="@member.UserId" />
+                                                        <input type="hidden" name="newRole" value="@BookShelf.Domain.Enums.MemberRole.Member" />
+                                                        <button type="submit" class="dropdown-item">Member</button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="UpdateMemberRole" method="post">
+                                                        <input type="hidden" name="bookClubId" value="@bookClubId" />
+                                                        <input type="hidden" name="userId" value="@member.UserId" />
+                                                        <input type="hidden" name="newRole" value="@BookShelf.Domain.Enums.MemberRole.Moderator" />
+                                                        <button type="submit" class="dropdown-item">Moderator</button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form asp-action="UpdateMemberRole" method="post">
+                                                        <input type="hidden" name="bookClubId" value="@bookClubId" />
+                                                        <input type="hidden" name="userId" value="@member.UserId" />
+                                                        <input type="hidden" name="newRole" value="@BookShelf.Domain.Enums.MemberRole.Admin" />
+                                                        <button type="submit" class="dropdown-item">Admin</button>
+                                                    </form>
+                                                </li>
+                                            </ul>
+                                        </div>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

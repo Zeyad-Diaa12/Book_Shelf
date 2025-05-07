@@ -1,0 +1,262 @@
+@model BookShelf.Models.MyBooksViewModel
+
+@{
+    ViewData["Title"] = "My Books";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>My Books</h1>
+        <div>
+            <a asp-controller="Users" asp-action="Profile" class="btn btn-outline-primary me-2">
+                <i class="bi bi-person me-1"></i>Back to Profile
+            </a>
+            <a asp-controller="Books" asp-action="AddToReading" class="btn btn-primary">
+                <i class="bi bi-plus-circle me-1"></i>Add Book
+            </a>
+        </div>
+    </div>
+
+    <!-- Book Categories -->
+    <ul class="nav nav-tabs mb-4" id="myBooksTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="all-books-tab" data-bs-toggle="tab" data-bs-target="#all-books"
+                type="button" role="tab" aria-controls="all-books" aria-selected="true">
+                All Books
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="reading-tab" data-bs-toggle="tab" data-bs-target="#reading" type="button"
+                role="tab" aria-controls="reading" aria-selected="false">
+                Currently Reading
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button"
+                role="tab" aria-controls="completed" aria-selected="false">
+                Completed
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content" id="myBooksTabContent">
+        <!-- All Books Tab -->
+        <div class="tab-pane fade show active" id="all-books" role="tabpanel" aria-labelledby="all-books-tab">
+            @if (Model.Books != null && Model.Books.Any())
+            {
+                <div class="row">
+                    @foreach (var book in Model.Books)
+                    {
+                        <div class="col-md-3 mb-4">
+                            <div class="card h-100">
+                                <img src="@(string.IsNullOrEmpty(book.CoverImageUrl) ? "/images/default-book-cover.jpg" : book.CoverImageUrl)"
+                                    class="card-img-top" alt="@book.Title" style="height: 200px; object-fit: cover;">
+                                <div class="card-body">
+                                    <h5 class="card-title text-truncate" title="@book.Title">@book.Title</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">@book.Author</h6>
+                                    <p class="card-text text-truncate" title="@book.Description">
+                                        @(book.Description ?? "No description available")
+                                    </p>
+                                    @if (Model.IsInReadingList(book))
+                                    {
+                                        var progress = Model.GetProgressForBook(book);
+                                        if (progress != null)
+                                        {
+                                            <div class="progress mb-2" style="height: 5px;">
+                                                <div class="progress-bar" role="progressbar"
+                                                    style="width: @(progress.CompletionPercentage)%;"
+                                                    aria-valuenow="@progress.CompletionPercentage" aria-valuemin="0"
+                                                    aria-valuemax="100"></div>
+                                            </div>
+                                            <small class="text-muted">
+                                                @if (progress.Status == BookShelf.Domain.Enums.ReadingStatus.Completed)
+                                                {
+                                                    <span class="badge bg-success">Completed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span>@progress.CompletionPercentage.ToString("0.0")% Complete</span>
+                                                }
+                                            </small>
+                                        }
+                                    }
+                                </div>
+                                <div class="card-footer bg-white border-top-0">
+                                    <div class="d-grid gap-1">
+                                        <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id"
+                                            class="btn btn-sm btn-outline-primary">View Details</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="bi bi-book" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>You haven't added any books yet</h4>
+                    <p class="text-muted">Start building your collection by adding books to your shelves.</p>
+                    <a asp-controller="Books" asp-action="Index" class="btn btn-primary mt-2">
+                        Browse Books
+                    </a>
+                </div>
+            }
+        </div>
+
+        <!-- Currently Reading Tab -->
+        <div class="tab-pane fade" id="reading" role="tabpanel" aria-labelledby="reading-tab">
+            @{
+                var currentlyReading = Model.ReadingProgress != null ?
+                Model.ReadingProgress
+                .Where(rp => rp.Status == BookShelf.Domain.Enums.ReadingStatus.InProgress)
+                .ToList() :
+                new List<BookShelf.Application.DTOs.ReadingProgressDto>();
+            }
+
+            @if (currentlyReading.Any())
+            {
+                <div class="row">
+                    @foreach (var progress in currentlyReading)
+                    {
+                        var book = Model.Books?.FirstOrDefault(b => b.Id == progress.BookId);
+                        if (book != null)
+                        {
+                            <div class="col-md-3 mb-4">
+                                <div class="card h-100">
+                                    <img src="@(string.IsNullOrEmpty(book.CoverImageUrl) ? "/images/default-book-cover.jpg" : book.CoverImageUrl)"
+                                        class="card-img-top" alt="@book.Title" style="height: 200px; object-fit: cover;">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate" title="@book.Title">@book.Title</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">@book.Author</h6>
+
+                                        <div class="progress mb-2">
+                                            <div class="progress-bar" role="progressbar"
+                                                style="width: @(progress.CompletionPercentage)%;"
+                                                aria-valuenow="@progress.CompletionPercentage" aria-valuemin="0"
+                                                aria-valuemax="100"></div>
+                                        </div>
+                                        <p class="small text-muted">
+                                            @progress.CompletionPercentage.ToString("0.0")% Complete
+                                            <br>
+                                            Page @progress.CurrentPage of @progress.TotalPages
+                                        </p>
+                                    </div>
+                                    <div class="card-footer bg-white border-top-0">
+                                        <div class="d-grid gap-1">
+                                            <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id"
+                                                class="btn btn-sm btn-primary">Continue Reading</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="bi bi-book-half" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>You're not currently reading any books</h4>
+                    <p class="text-muted">Start reading a book to track your progress.</p>
+                    <a asp-controller="Books" asp-action="AddToReading" class="btn btn-primary mt-2">
+                        Start Reading a Book
+                    </a>
+                </div>
+            }
+        </div>
+
+        <!-- Completed Tab -->
+        <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+            @{
+                var completedBooks = Model.ReadingProgress != null ?
+                Model.ReadingProgress
+                .Where(rp => rp.Status == BookShelf.Domain.Enums.ReadingStatus.Completed)
+                .ToList() :
+                new List<BookShelf.Application.DTOs.ReadingProgressDto>();
+            }
+
+            @if (completedBooks.Any())
+            {
+                <div class="row">
+                    @foreach (var progress in completedBooks)
+                    {
+                        var book = Model.Books?.FirstOrDefault(b => b.Id == progress.BookId);
+                        if (book != null)
+                        {
+                            <div class="col-md-3 mb-4">
+                                <div class="card h-100">
+                                    <img src="@(string.IsNullOrEmpty(book.CoverImageUrl) ? "/images/default-book-cover.jpg" : book.CoverImageUrl)"
+                                        class="card-img-top" alt="@book.Title" style="height: 200px; object-fit: cover;">
+                                    <div class="card-body">
+                                        <h5 class="card-title text-truncate" title="@book.Title">@book.Title</h5>
+                                        <h6 class="card-subtitle mb-2 text-muted">@book.Author</h6>
+                                        <div class="mb-2">
+                                            <span class="badge bg-success">Completed</span>
+                                            <small class="text-muted ms-2">@progress.CompletedDate?.ToString("MMM d, yyyy")</small>
+                                        </div>
+                                    </div>
+                                    <div class="card-footer bg-white border-top-0">
+                                        <div class="d-grid gap-2">
+                                            <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id"
+                                                class="btn btn-sm btn-outline-primary">View Details</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <div class="mb-3">
+                        <i class="bi bi-check-circle" style="font-size: 3rem;"></i>
+                    </div>
+                    <h4>You haven't completed any books yet</h4>
+                    <p class="text-muted">Books you finish reading will appear here.</p>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            // Initialize Bootstrap tabs
+            if (document.getElementById('myBooksTab')) {
+                try {
+                    var myBooksTab = document.getElementById('myBooksTab');
+                    var tabs = new bootstrap.Tab(myBooksTab.querySelector('.nav-link.active'));
+
+                    // Handle URL hash for tabs
+                    var hash = window.location.hash;
+                    if (hash) {
+                        var triggerEl = document.querySelector('#myBooksTab button[data-bs-target="' + hash + '"]');
+                        if (triggerEl) {
+                            bootstrap.Tab.getOrCreateInstance(triggerEl).show();
+                        }
+                    }
+
+                    // Change hash on tab selection
+                    var tabEls = document.querySelectorAll('#myBooksTab button[data-bs-toggle="tab"]');
+                    tabEls.forEach(function (tabEl) {
+                        tabEl.addEventListener('shown.bs.tab', function (event) {
+                            window.location.hash = event.target.getAttribute('data-bs-target');
+                        });
+                    });
+                } catch (e) {
+                    console.error("Error initializing tabs:", e);
+                }
+            }
+        });
+    </script>
+}

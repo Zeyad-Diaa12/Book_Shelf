@@ -1,0 +1,28 @@
+@{
+    ViewData["Title"] = "Access Denied";
+}
+
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8 text-center">
+            <div class="card border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0"><i class="bi bi-exclamation-triangle-fill me-2"></i>Access Denied</h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead">You do not have permission to access this resource.</p>
+                    <p>Please log in with an account that has the necessary permissions or contact the administrator if
+                        you believe this is an error.</p>
+                    <div class="mt-4">
+                        <a asp-controller="Home" asp-action="Index" class="btn btn-outline-primary me-2">
+                            <i class="bi bi-house me-1"></i>Return to Home
+                        </a>
+                        <a asp-controller="Users" asp-action="Login" class="btn btn-primary">
+                            <i class="bi bi-box-arrow-in-right me-1"></i>Log In
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

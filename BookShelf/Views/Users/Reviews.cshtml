@@ -1,0 +1,88 @@
+@model BookShelf.Application.DTOs.UserDto
+
+@{
+    ViewData["Title"] = $"{Model.Username}'s Reviews";
+}
+
+<div class="container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="d-flex align-items-center">
+                <div class="me-3">
+                    <img src="@(string.IsNullOrEmpty(Model.ProfilePictureUrl) ? "/images/default-profile.png" : Model.ProfilePictureUrl)" 
+                         alt="Profile Picture" class="rounded-circle" style="width: 60px; height: 60px;">
+                </div>
+                <div>
+                    <h2 class="mb-0">@Model.Username's Reviews</h2>
+                    <a asp-action="Profile" asp-route-id="@Model.Id" class="text-decoration-none">
+                        <i class="bi bi-arrow-left me-1"></i> Back to Profile
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    @if (Model.Reviews != null && Model.Reviews.Any())
+                    {
+                        <div class="row">
+                            @foreach (var review in Model.Reviews)
+                            {
+                                <div class="col-md-6 mb-4">
+                                    <div class="card h-100 shadow-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex mb-3">
+                                                <div class="me-3">
+                                                    <a asp-controller="Books" asp-action="Details" asp-route-id="@review.BookId">
+                                                        <img src="@review.BookCoverUrl" alt="@review.BookTitle" 
+                                                            style="width: 80px; height: 120px; object-fit: cover;">
+                                                    </a>
+                                                </div>
+                                                <div>
+                                                    <h5 class="card-title">
+                                                        <a asp-controller="Books" asp-action="Details" asp-route-id="@review.BookId" 
+                                                           class="text-decoration-none">@review.BookTitle</a>
+                                                    </h5>
+                                                    <p class="text-muted">Book Review</p>
+                                                    <div class="mb-2">
+                                                        @for (int i = 1; i <= 5; i++)
+                                                        {
+                                                            if (i <= review.Rating)
+                                                            {
+                                                                <i class="bi bi-star-fill text-warning"></i>
+                                                            }
+                                                            else
+                                                            {
+                                                                <i class="bi bi-star text-warning"></i>
+                                                            }
+                                                        }
+                                                        <span class="text-muted ms-2 small">@review.CreatedDate.ToString("MMM d, yyyy")</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <p>@review.Content</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="bi bi-stars" style="font-size: 3rem;"></i>
+                            </div>
+                            <h5>No reviews yet</h5>
+                            <p class="text-muted">@Model.Username hasn't written any reviews yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

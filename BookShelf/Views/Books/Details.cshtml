@@ -1,0 +1,177 @@
+@model BookShelf.Application.DTOs.BookDto
+
+@{
+    ViewData["Title"] = Model.Title;
+    var reviews = (IEnumerable<BookShelf.Application.DTOs.ReviewDto>)ViewData["Reviews"] ?? Enumerable.Empty<BookShelf.Application.DTOs.ReviewDto>();
+    var averageRating = (double)ViewData["AverageRating"];
+    var ratingDistribution = (Dictionary<int, int>)ViewData["RatingDistribution"] ?? new Dictionary<int, int>();
+}
+
+<div class="container">
+    <div class="row">
+        <!-- Book Details -->
+        <div class="col-md-4">
+            <img src="@(string.IsNullOrEmpty(Model.CoverImageUrl) ? "/images/default-book-cover.jpg" : Model.CoverImageUrl)" 
+                 class="img-fluid rounded" alt="@Model.Title" style="max-height: 400px;">
+                 
+            <div class="mt-4">
+                <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-primary">Edit</a>
+                <a asp-action="Delete" asp-route-id="@Model.Id" class="btn btn-danger">Delete</a>
+            </div>
+            
+            <div class="mt-4">
+                <h5>Reading Status</h5>
+                <div class="d-grid gap-2">
+                    <form asp-action="StartReading" method="post">
+                        <input type="hidden" name="bookId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-success w-100 mb-2">Start Reading</button>
+                    </form>
+                    
+                    <form asp-action="UpdateReadingProgress" method="post">
+                        <input type="hidden" name="BookId" value="@Model.Id" />
+                        <div class="input-group mb-2">
+                            <input type="number" name="CurrentPage" class="form-control" placeholder="Current Page" required min="1" max="@Model.PageCount">
+                            <input type="number" name="PagesReadToday" value="0" class="form-control" placeholder="Pages Today">
+                            <button type="submit" class="btn btn-primary">Update Progress</button>
+                        </div>
+                    </form>
+                    
+                    <form asp-action="FinishReading" method="post">
+                        <input type="hidden" name="bookId" value="@Model.Id" />
+                        <button type="submit" class="btn btn-info w-100">Mark as Finished</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <h1>@Model.Title</h1>
+            <h4 class="text-muted">by @Model.Author</h4>
+            
+            <div class="mb-3">
+                <div class="d-flex align-items-center">
+                    <div class="me-2">
+                        @for (int i = 1; i <= 5; i++)
+                        {
+                            <i class="bi @(i <= Math.Round(averageRating) ? "bi-star-fill text-warning" : "bi-star")"></i>
+                        }
+                    </div>
+                    <div>
+                        <span class="fw-bold">@averageRating.ToString("0.0")</span>
+                        <span class="text-muted">(@reviews.Count() reviews)</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="row mb-4">
+                <div class="col-md-6">
+                    <p><strong>ISBN:</strong> @Model.ISBN</p>
+                    <p><strong>Publication Date:</strong> @Model.PublishedDate.ToString("MMMM d, yyyy")</p>
+                    <p><strong>Page Count:</strong> @Model.PageCount</p>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <h4>Description</h4>
+                <p>@Model.Description</p>
+            </div>
+            
+            <!-- Rating Distribution -->
+            <div class="mb-4">
+                <h4>Rating Distribution</h4>
+                <div class="row">
+                    @for (int rating = 5; rating >= 1; rating--)
+                    {
+                        <div class="col-md-12 mb-1">
+                            <div class="d-flex align-items-center">
+                                <div style="width: 80px;">
+                                    @rating <i class="bi bi-star-fill text-warning"></i>
+                                </div>
+                                <div class="progress flex-grow-1" style="height: 15px;">
+                                    @{ 
+                                        var percentage = reviews.Any() ? (ratingDistribution.ContainsKey(rating) ? (double)ratingDistribution[rating] / reviews.Count() * 100 : 0) : 0;
+                                    }
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: @percentage%;" 
+                                         aria-valuenow="@percentage" aria-valuemin="0" aria-valuemax="100">
+                                    </div>
+                                </div>
+                                <div style="width: 50px; text-align: right;">
+                                    @(ratingDistribution.ContainsKey(rating) ? ratingDistribution[rating] : 0)
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+            
+            <!-- Write a Review -->
+            <div class="mb-4">
+                <h4>Write a Review</h4>
+                <form asp-action="AddReview" method="post">
+                    <input type="hidden" name="BookId" value="@Model.Id" />
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Rating</label>
+                        <select name="Rating" class="form-select" required>
+                            <option value="">Select a rating</option>
+                            <option value="5">5 - Excellent</option>
+                            <option value="4">4 - Very Good</option>
+                            <option value="3">3 - Good</option>
+                            <option value="2">2 - Fair</option>
+                            <option value="1">1 - Poor</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Review</label>
+                        <textarea name="Content" class="form-control" rows="3" required></textarea>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">Submit Review</button>
+                </form>
+            </div>
+            
+            <!-- Reviews Section -->
+            <div>
+                <h4>Reviews (@reviews.Count())</h4>
+                
+                @if (reviews.Any())
+                {
+                    @foreach (var review in reviews)
+                    {
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                    <div>
+                                        <h5 class="card-title mb-0">@review.Username</h5>
+                                        <div>
+                                            @for (int i = 1; i <= 5; i++)
+                                            {
+                                                <i class="bi @(i <= review.Rating ? "bi-star-fill text-warning" : "bi-star")"></i>
+                                            }
+                                            <small class="text-muted ms-2">@review.CreatedAt.ToString("MMM d, yyyy")</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="card-text">@review.Comment</p>
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-muted">No reviews yet. Be the first to review this book!</p>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add any JavaScript specific to this page here
+        });
+    </script>
+}

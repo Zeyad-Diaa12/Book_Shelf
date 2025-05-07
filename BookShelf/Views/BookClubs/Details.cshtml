@@ -1,0 +1,226 @@
+@model BookShelf.Application.DTOs.BookClubDto
+
+@{
+    ViewData["Title"] = Model.Name;
+}
+
+<div class="container">
+    <div class="row">
+        <!-- Book Club Info -->
+        <div class="col-md-4">
+            <div class="card mb-4">
+                <img src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "/images/default-club-image.jpg" : Model.ImageUrl)" 
+                     class="card-img-top" alt="@Model.Name" style="height: 250px; object-fit: cover;">
+                <div class="card-body">
+                    <h2 class="card-title">@Model.Name</h2>
+                    <p class="card-text">@Model.Description</p>
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-1">@Model.MemberCount Members</span>
+                        @if (!Model.IsPublic)
+                        {
+                            <span class="badge bg-secondary">Private</span>
+                        }
+                    </div>
+                    <p class="card-text"><small class="text-muted">Created by @Model.CreatorName on @Model.CreatedDate.ToString("MMM d, yyyy")</small></p>
+                    
+                    @if (Model.IsMember)
+                    {
+                        <form asp-action="Leave" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-outline-danger w-100 mb-2">Leave Book Club</button>
+                        </form>
+                    }
+                    else
+                    {
+                        <form asp-action="Join" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+                            <button type="submit" class="btn btn-success w-100 mb-2">Join Book Club</button>
+                        </form>
+                    }
+                    
+                    <div class="d-flex justify-content-between">
+                        <a asp-action="Index" class="btn btn-secondary">Back to List</a>
+                        @if (Model.IsMember)
+                        {
+                            <a asp-action="Members" asp-route-id="@Model.Id" class="btn btn-primary">Members</a>
+                        }
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Current Book -->
+            @* <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Current Book</h5>
+                    @if (Model.IsMember)
+                    {
+                        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#selectBookModal">Change</button>
+                    }
+                </div>
+                @if (Model.CurrentBook != null)
+                {
+                    <div class="row g-0">
+                        <div class="col-4">
+                            <img src="@(string.IsNullOrEmpty(Model.CurrentBook.CoverImageUrl) ? "/images/default-book-cover.jpg" : Model.CurrentBook.CoverImageUrl)" 
+                                 class="img-fluid rounded-start" alt="@Model.CurrentBook.Title" style="width: 100%; height: 100%; object-fit: cover;">
+                        </div>
+                        <div class="col-8">
+                            <div class="card-body">
+                                <h5 class="card-title">@Model.CurrentBook.Title</h5>
+                                <p class="card-text">@Model.CurrentBook.Author</p>
+                                <a asp-controller="Books" asp-action="Details" asp-route-id="@Model.CurrentBook.Id" class="btn btn-sm btn-primary">View Book</a>
+                            </div>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="card-body text-center">
+                        <p class="card-text text-muted">No book selected yet</p>
+                        @if (Model.IsMember)
+                        {
+                            <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#selectBookModal">Select Book</button>
+                        }
+                    </div>
+                }
+            </div> *@
+            
+            <!-- Genres -->
+            @* <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Club Genres</h5>
+                </div>
+                <div class="card-body">
+                    @if (Model.Genres != null && Model.Genres.Any())
+                    {
+                        @foreach (var genre in Model.Genres)
+                        {
+                            <span class="badge bg-info me-1 mb-1">@genre</span>
+                        }
+                    }
+                    else
+                    {
+                        <p class="card-text text-muted">No genres specified</p>
+                    }
+                </div>
+            </div> *@
+        </div>
+        
+        <!-- Discussions and Activities -->
+        <div class="col-md-8">
+            <!-- Discussions -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Discussions</h3>
+                    <div>
+                        @if (Model.IsMember)
+                        {
+                            <a asp-action="CreateDiscussion" asp-route-bookClubId="@Model.Id" class="btn btn-primary">New Discussion</a>
+                        }
+                        <a asp-action="Discussions" asp-route-id="@Model.Id" class="btn btn-outline-primary">View All</a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    @if (Model.RecentDiscussions != null && Model.RecentDiscussions.Any())
+                    {
+                        @foreach (var discussion in Model.RecentDiscussions)
+                        {
+                            <div class="card mb-3">
+                                <div class="card-body">
+                                    <h5 class="card-title">@discussion.Title</h5>
+                                    <h6 class="card-subtitle mb-2 text-muted">By @discussion.Username - @discussion.CreatedDate.ToString("MMM d, yyyy")</h6>
+                                    <p class="card-text">
+                                        @if (discussion.Content != null && discussion.Content.Length > 150)
+                                        {
+                                            @(discussion.Content.Substring(0, 150))
+                                            <span class="text-muted">...</span>
+                                        }
+                                        else
+                                        {
+                                            @(discussion.Content ?? "No content available")
+                                        }
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="bi bi-chat-left-text me-1"></i>
+                                            @discussion.CommentCount comment@(discussion.CommentCount != 1 ? "s" : "")
+                                        </small>
+                                        <a asp-controller="BookClubs" 
+                                           asp-action="DiscussionDetails" 
+                                           asp-route-id="@discussion.Id" 
+                                           class="btn btn-sm btn-primary">Read More</a>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p class="text-muted text-center">No discussions yet. Be the first to start a conversation!</p>
+                    }
+                </div>
+            </div>
+            
+            <!-- Members List -->
+            <div class="card mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h3 class="mb-0">Members (@Model.MemberCount)</h3>
+                    <a asp-action="Members" asp-route-id="@Model.Id" class="btn btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        @if (Model.Members != null && Model.Members.Any())
+                        {
+                            @foreach (var member in Model.Members.Take(6))
+                            {
+                                <div class="col-md-4 mb-3 text-center">
+                                    <div class="border rounded p-2">
+                                        <h6>@member.Username</h6>
+                                        <span class="badge bg-@(member.Role == BookShelf.Domain.Enums.MemberRole.Admin ? "danger" : "info")">
+                                            @member.Role
+                                        </span>
+                                        <p class="mb-0"><small class="text-muted">Joined @member.JoinedDate.ToString("MMM d, yyyy")</small></p>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <p class="text-muted text-center">No members yet.</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Select Book Modal -->
+<div class="modal fade" id="selectBookModal" tabindex="-1" aria-labelledby="selectBookModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="selectBookModalLabel">Select Book for Club</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <!-- Book selection form would go here -->
+                <p class="text-muted">Book selection feature will be implemented in the future.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary">Save Changes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Add any JavaScript specific to this page here
+        });
+    </script>
+}

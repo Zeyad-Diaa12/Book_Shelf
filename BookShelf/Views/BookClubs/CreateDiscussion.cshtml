@@ -1,0 +1,69 @@
+@model BookShelf.Application.DTOs.CreateDiscussionDto
+
+@{
+    ViewData["Title"] = "Create Discussion";
+}
+
+<div class="container">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <h1 class="mb-4">Create New Discussion</h1>
+            <div class="card">
+                <div class="card-body">
+                    <form asp-action="CreateDiscussion" method="post">
+                        <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                        
+                        @if (Model.BookClubId.HasValue)
+                        {
+                            <input type="hidden" asp-for="BookClubId" />
+                        }
+                        else
+                        {
+                            <div class="alert alert-info mb-4">
+                                <p class="mb-0">You are creating a general discussion. To create a discussion in a specific book club, start from the book club page.</p>
+                            </div>
+                        }
+                        
+                        <div class="mb-3">
+                            <label asp-for="Title" class="form-label">Discussion Title</label>
+                            <input asp-for="Title" class="form-control" />
+                            <span asp-validation-for="Title" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="Content" class="form-label">Content</label>
+                            <textarea asp-for="Content" class="form-control" rows="8"></textarea>
+                            <span asp-validation-for="Content" class="text-danger"></span>
+                        </div>
+                        
+                        @* <div class="mb-3">
+                            <label asp-for="BookId" class="form-label">Related Book (Optional)</label>
+                            <select asp-for="BookId" class="form-select">
+                                <option value="">-- Select a book (optional) --</option>
+                                <!-- This would be populated with available books in a real implementation -->
+                            </select>
+                            <span asp-validation-for="BookId" class="text-danger"></span>
+                            <div class="form-text">If this discussion is about a specific book, select it here.</div>
+                        </div> *@
+                        
+                        <div class="d-flex justify-content-between">
+                            @if (Model.BookClubId.HasValue)
+                            {
+                                <a asp-action="Discussions" asp-route-id="@Model.BookClubId" class="btn btn-outline-secondary">Back to Discussions</a>
+                            }
+                            else
+                            {
+                                <a asp-action="Index" asp-controller="Discussions" class="btn btn-outline-secondary">Back to Discussions</a>
+                            }
+                            <button type="submit" class="btn btn-primary">Create Discussion</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

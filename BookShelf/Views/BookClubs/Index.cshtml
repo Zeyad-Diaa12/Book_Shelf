@@ -1,0 +1,58 @@
+@model IEnumerable<BookShelf.Application.DTOs.BookClubDto>
+
+@{
+    ViewData["Title"] = "Book Clubs";
+}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Book Clubs</h1>
+        <div>
+            <a asp-action="Create" class="btn btn-primary">Create New Book Club</a>
+            <a asp-action="MyBookClubs" class="btn btn-outline-primary">My Book Clubs</a>
+        </div>
+    </div>
+
+    <div class="row">
+        @if (Model.Any())
+        {
+            @foreach (var club in Model)
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <img src="@(string.IsNullOrEmpty(club.ImageUrl) ? "/images/default-club-image.jpg" : club.ImageUrl)"
+                            class="card-img-top" alt="@club.Name" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">@club.Name</h5>
+                            <p class="card-text">@(club.Description.Length > 100 ? club.Description.Substring(0, 100) + "..." :
+                                                        club.Description)</p>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-primary me-1">@club.MemberCount Members</span>
+                            @if (!club.IsPublic)
+                                    {
+                                        <span class="badge bg-secondary">Private</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="card-footer bg-transparent">
+                            <div class="d-flex justify-content-between">
+                                <small class="text-muted">Created by @club.CreatorUsername</small>
+                                <a asp-action="Details" asp-route-id="@club.Id" class="btn btn-sm btn-primary">View Details</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No book clubs found. Be the first to create one!
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -1,0 +1,38 @@
+version: '3.8'
+
+services:
+  bookshelf-app:
+    build:
+      context: .
+      dockerfile: BookShelf/Dockerfile
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    depends_on:
+      - postgres-db
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Server=postgres-db;Port=5432;Database=BookShelfDb;Username=postgres;Password=postgres;
+    networks:
+      - bookshelf-network
+
+  postgres-db:
+    image: postgres:latest
+    restart: always
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=BookShelfDb
+    ports:
+      - "5432:5432" 
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    networks:
+      - bookshelf-network
+
+networks:
+  bookshelf-network:
+    driver: bridge
+
+volumes:
+  postgres-data:

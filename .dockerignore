@@ -1,0 +1,61 @@
+# Git
+.git
+.gitignore
+.github
+
+# Development & IDE files
+.vscode
+.vs
+*.user
+*.suo
+*.sln.docstates
+*.userprefs
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+# Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+
+# NuGet
+*.nupkg
+**/packages/*
+!**/packages/build/
+
+# Docker
+**/docker-compose.yml
+**/docker-compose.override.yml
+**/.dockerignore
+**/Dockerfile
+**/docker-compose*.yml
+
+# Environment files
+**/.env
+**/.env.*
+!**/.env.example
+
+# Documentation
+README.md
+LICENSE
+*.md
+
+# Other
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+*.userprefs
+node_modules/
+.DS_Store
+*.pyc

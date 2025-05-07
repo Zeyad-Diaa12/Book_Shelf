@@ -1,0 +1,38 @@
+# Production Dockerfile for BookShelf
+FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS base
+WORKDIR /app
+EXPOSE 8080
+EXPOSE 8081
+
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+# Copy solution and project files first for better layer caching
+COPY ["BookShelf/BookShelf.csproj", "BookShelf/"]
+COPY ["BookShelf.Application/BookShelf.Application.csproj", "BookShelf.Application/"]
+COPY ["BookShelf.Domain/BookShelf.Domain.csproj", "BookShelf.Domain/"]
+COPY ["BookShelf.Infrastructure/BookShelf.Infrastructure.csproj", "BookShelf.Infrastructure/"]
+
+# Restore packages
+RUN dotnet restore "BookShelf/BookShelf.csproj"
+
+# Copy all source code
+COPY . .
+WORKDIR "/src/BookShelf"
+RUN dotnet build "BookShelf.csproj" -c Release -o /app/build
+
+FROM build AS publish
+RUN dotnet publish "BookShelf.csproj" -c Release -o /app/publish /p:UseAppHost=false
+
+FROM base AS final
+WORKDIR /app
+COPY --from=publish /app/publish .
+
+# Create non-root user for security
+RUN adduser --disabled-password --gecos "" appuser && chown -R appuser:appuser /app
+USER appuser
+
+# Health check configuration
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+    CMD curl -f http://localhost:8080/health || exit 1
+
+ENTRYPOINT ["dotnet", "BookShelf.dll"]

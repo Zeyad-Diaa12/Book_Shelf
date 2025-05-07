@@ -1,0 +1,170 @@
+﻿@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="container">
+    <!-- Hero Section -->
+    <div class="jumbotron bg-light mb-4 p-5 rounded">
+        <h1 class="display-4">Welcome to BookShelf</h1>
+        <p class="lead">Track your reading journey, discover new books, and connect with other readers.</p>
+        <hr class="my-4">
+        <p>Join thousands of readers who are tracking their progress, setting goals, and sharing their passion for
+            books.</p>
+        <a class="btn btn-primary btn-lg" asp-controller="Books" asp-action="Index">Browse Books</a>
+        <a class="btn btn-success btn-lg" asp-controller="BookClubs" asp-action="Index">Explore Book Clubs</a>
+    </div>
+
+    <!-- Top Rated Books -->
+    <h2 class="mb-4">Top Rated Books</h2>
+    <div class="row mb-5">
+        @if (ViewData["TopRatedBooks"] != null)
+        {
+            @foreach (var book in (IEnumerable<BookShelf.Application.DTOs.BookDto>)ViewData["TopRatedBooks"])
+            {
+                <div class="col-md-2 mb-4">
+                    <div class="card h-100">
+                        <img src="@(string.IsNullOrEmpty(book.CoverImageUrl) ? "/images/default-book-cover.jpg" : book.CoverImageUrl)"
+                            class="card-img-top" alt="@book.Title" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate" title="@book.Title">@book.Title</h5>
+                            <p class="card-text text-truncate" title="@book.Author">@book.Author</p>
+                            <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id"
+                                class="btn btn-sm btn-primary">Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <p class="text-center">No rated books available yet.</p>
+            </div>
+        }
+    </div>
+
+    <!-- Currently Reading -->
+    @if (ViewData["CurrentlyReading"] != null &&
+        ((IEnumerable<BookShelf.Application.DTOs.ReadingProgressDto>)ViewData["CurrentlyReading"]).Any())
+    {
+        <h2 class="mb-4">Currently Reading</h2>
+        <div class="row mb-5">
+            @foreach (var progress in
+                    (IEnumerable<BookShelf.Application.DTOs.ReadingProgressDto>)ViewData["CurrentlyReading"])
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@progress.BookTitle</h5>
+                            <div class="progress mb-3">
+                                <div class="progress-bar" role="progressbar" style="width: @progress.CompletionPercentage%;"
+                                    aria-valuenow="@progress.CompletionPercentage" aria-valuemin="0" aria-valuemax="100">
+                                    @progress.CompletionPercentage.ToString("0.0")%
+                                </div>
+                            </div>
+                            <p class="card-text">Page @progress.CurrentPage of @progress.TotalPages</p>
+                            <a asp-controller="Books" asp-action="Details" asp-route-id="@progress.BookId"
+                                class="btn btn-primary">
+                                Continue Reading
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Recommendations -->
+    <h2 class="mb-4">Recommended for You</h2>
+    <div class="row mb-5">
+        @if (ViewData["Recommendations"] != null &&
+                ((IEnumerable<BookShelf.Application.DTOs.BookDto>)ViewData["Recommendations"]).Any())
+        {
+            @foreach (var book in (IEnumerable<BookShelf.Application.DTOs.BookDto>)ViewData["Recommendations"])
+            {
+                <div class="col-md-2 mb-4">
+                    <div class="card h-100">
+                        <img src="@(string.IsNullOrEmpty(book.CoverImageUrl) ? "/images/default-book-cover.jpg" : book.CoverImageUrl)"
+                            class="card-img-top" alt="@book.Title" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title text-truncate" title="@book.Title">@book.Title</h5>
+                            <p class="card-text text-truncate" title="@book.Author">@book.Author</p>
+                            <a asp-controller="Books" asp-action="Details" asp-route-id="@book.Id"
+                                class="btn btn-sm btn-primary">Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <p class="text-center">Start adding books to your shelf to get personalized recommendations!</p>
+            </div>
+        }
+    </div>
+
+    <!-- Reading Goals -->
+    @if (ViewData["ReadingGoals"] != null &&
+        ((IEnumerable<BookShelf.Application.DTOs.ReadingGoalDto>)ViewData["ReadingGoals"]).Any())
+    {
+        <h2 class="mb-4">Your Reading Goals</h2>
+        <div class="row mb-5">
+            @foreach (var goal in (IEnumerable<BookShelf.Application.DTOs.ReadingGoalDto>)ViewData["ReadingGoals"])
+            {
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@goal.Name</h5>
+                            <h6 class="card-subtitle mb-2 text-muted">@goal.GoalType.ToString()</h6>
+                            <div class="progress mb-3">
+                                <div class="progress-bar @(goal.ProgressPercentage >= 100 ? "bg-success" : "")"
+                                    role="progressbar" style="width: @Math.Min(goal.ProgressPercentage, 100)%;"
+                                    aria-valuenow="@goal.ProgressPercentage" aria-valuemin="0" aria-valuemax="100">
+                                    @goal.ProgressPercentage.ToString("0.0")%
+                                </div>
+                            </div>
+                            <p class="card-text">@goal.Progress of @goal.TargetValue</p>
+                            <p class="card-text"><small class="text-muted">@goal.Period</small></p>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <!-- Popular Book Clubs -->
+    <h2 class="mb-4">Popular Book Clubs</h2>
+    <div class="row mb-5">
+        @if (ViewData["PopularBookClubs"] != null &&
+                ((IEnumerable<BookShelf.Application.DTOs.BookClubDto>)ViewData["PopularBookClubs"]).Any())
+        {
+            @foreach (var club in (IEnumerable<BookShelf.Application.DTOs.BookClubDto>)ViewData["PopularBookClubs"])
+            {
+                <div class="col-md-3 mb-4">
+                    <div class="card h-100">
+                        <img src="@(string.IsNullOrEmpty(club.ImageUrl) ? "/images/default-club-image.jpg" : club.ImageUrl)"
+                            class="card-img-top" alt="@club.Name" style="height: 150px; object-fit: cover;">
+                        <div class="card-body">
+                            <h5 class="card-title">@club.Name</h5>
+                            <p class="card-text text-truncate">@club.Description</p>
+                            <p class="card-text"><small class="text-muted">@club.MemberCount members</small></p>
+                            <p class="card-text"><small class="text-muted">Created by @club.CreatorUsername</small></p>
+                            <a asp-controller="BookClubs" asp-action="Details" asp-route-id="@club.Id"
+                                class="btn btn-sm btn-primary">View Details</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <p class="text-center">No book clubs available yet. Why not create one?</p>
+                <p class="text-center">
+                    <a asp-controller="BookClubs" asp-action="Create" class="btn btn-primary">Create Book Club</a>
+                </p>
+            </div>
+        }
+    </div>
+</div>
