@@ -1,2 +1,18 @@
 # Ignore Visual Studio files
 .vs/
+
+# Ignore build output and intermediate files
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+*.nupkg
+*.dbmdl
+*.jfm
+*.cache
+*.log
+*.vs/
+*.vscode/
