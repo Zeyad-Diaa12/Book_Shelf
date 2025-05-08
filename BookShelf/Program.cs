@@ -14,16 +14,24 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Add DbContext with the appropriate connection string based on environment
+// Update the connection string logic to handle Railway environment
 string connectionString;
 // Check if running in Docker (environment variable set in docker-compose.yml)
 bool isRunningInContainer = Environment.GetEnvironmentVariable("DOTNET_RUNNING_IN_CONTAINER") == "true";
 if (isRunningInContainer)
 {
-    connectionString = builder.Configuration.GetConnectionString("DockerConnection")
+    connectionString = builder.Configuration.GetConnectionString("RailwayConnection")
+        ?? builder.Configuration.GetConnectionString("DockerConnection")
         ?? builder.Configuration.GetConnectionString("DefaultConnection")
         ?? throw new InvalidOperationException("Connection string is not configured.");
-    Console.WriteLine("Using Docker database connection");
+
+    // Ensure SSL is enabled for Railway
+    if (connectionString.Contains("Host=") && !connectionString.Contains("SSL Mode="))
+    {
+        connectionString += ";SSL Mode=Require;Trust Server Certificate=true";
+    }
+
+    Console.WriteLine("Using Railway or Docker database connection");
 }
 else
 {

@@ -10,12 +10,12 @@ services:
     ports:
       - "80:8080"
       - "443:8081"
-    depends_on:
-      - postgres-db
+    # depends_on:
+    #   - postgres-db
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - DOTNET_RUNNING_IN_CONTAINER=true
-      - ConnectionStrings__DefaultConnection=Server=postgres-db;Port=5432;Database=BookShelfDb;Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};
+      - ConnectionStrings__DefaultConnection=Host=shinkansen.proxy.rlwy.net;Port=21882;Database=railway;Username=postgres;Password=wFnrSggmAnzRuSRRkWhzwciBSpdiWrYG;
     networks:
       - bookshelf-network
     healthcheck:
@@ -25,22 +25,22 @@ services:
       retries: 3
       start_period: 40s
 
-  postgres-db:
-    image: postgres:latest
-    restart: always
-    environment:
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=BookShelfDb
-    volumes:
-      - postgres-data:/var/lib/postgresql/data
-    networks:
-      - bookshelf-network
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+  # postgres-db:
+  #   image: postgres:latest
+  #   restart: always
+  #   environment:
+  #     - POSTGRES_USER=${POSTGRES_USER}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #     - POSTGRES_DB=BookShelfDb
+  #   volumes:
+  #     - postgres-data:/var/lib/postgresql/data
+  #   networks:
+  #     - bookshelf-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "pg_isready -U postgres"]
+  #     interval: 10s
+  #     timeout: 5s
+  #     retries: 5
 
 networks:
   bookshelf-network:
